@@ -65,7 +65,9 @@ selected_game = st.selectbox('Select a game:', matching_games)
 # User input for platform, genres, and steamspy_tags
 platform_modes = ['Any', 'windows', 'mac', 'linux']
 selected_platform = st.selectbox('Select a platform:', platform_modes)
-selected_genre = st.text_input('Enter a genre (Optional):')
+# selected_genre = st.text_input('Enter a genre (Optional):')
+publisher_select = [final_merged_df['publisher'].unique()]
+selected_publisher = st.text_input('Enter a Publisher (Optional):')
 
 # Multiplayer or single player option in selectbox with partial matching
 game_modes = ['Any', 'Single-player', 'Multi-player', 'Co-op']
@@ -77,8 +79,8 @@ filtered_df = final_merged_df.copy()
 if selected_platform != 'Any':
     filtered_df = filtered_df[filtered_df['platforms'].str.contains(selected_platform, case=False, na=False)]
 
-if selected_genre:
-    filtered_df = filtered_df[filtered_df['genres'].str.contains(selected_genre, case=False, na=False)]
+if selected_publisher:
+    filtered_df = filtered_df[filtered_df['publisher'].str.contains(selected_publisher, case=False, na=False)]
 
 if selected_mode != 'Any':
     filtered_df = filtered_df[filtered_df['categories'].str.contains(selected_mode, case=False, na=False)]
