@@ -66,8 +66,8 @@ selected_game = st.selectbox('Select a game:', matching_games)
 platform_modes = ['Any', 'windows', 'mac', 'linux']
 selected_platform = st.selectbox('Select a platform:', platform_modes)
 # selected_genre = st.text_input('Enter a genre (Optional):')
-publisher_select = [final_merged_df['publisher'].unique()]
-selected_publisher = st.text_input('Enter a Publisher (Optional):', publisher_select)
+
+selected_publisher = st.text_input('Enter a Publisher (Optional):', '')
 
 # Multiplayer or single player option in selectbox with partial matching
 game_modes = ['Any', 'Single-player', 'Multi-player', 'Co-op']
