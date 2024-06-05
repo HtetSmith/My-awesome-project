@@ -46,7 +46,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 # Load your merged data and similarity matrix
 final_merged_df = pickle.load(open('pickle/final_merged_df.pkl', 'rb'))
 cosine_sim = pickle.load(open('pickle/cosine_sim.pkl', 'rb'))
@@ -59,19 +58,24 @@ required_age = st.slider('Select maximum allowed age rating:', 0, 21, 18)
 
 # User input for game title with partial matching
 selected_game_input = st.text_input('Type part or full of your favourite game title that you played:')
-matching_games = final_merged_df[final_merged_df['name'].str.contains(selected_game_input, case=False, na=False)]['name'].unique()
-selected_game = st.selectbox('Select a game:', matching_games)
+matching_games = []
+if selected_game_input:
+    matching_games = final_merged_df[final_merged_df['name'].str.contains(selected_game_input, case=False, na=False)]['name'].unique()
+
+selected_game = st.selectbox('Select a game:', options=matching_games) if len(matching_games) > 0 else None
 
 # User input for platform, genres, and steamspy_tags
 platform_modes = ['Any', 'windows', 'mac', 'linux']
 selected_platform = st.selectbox('Select a platform:', platform_modes)
-# selected_genre = st.text_input('Enter a genre (Optional):')
-
 selected_publisher = st.text_input('Enter a Publisher (Optional):', '')
 
 # Multiplayer or single player option in selectbox with partial matching
 game_modes = ['Any', 'Single-player', 'Multi-player', 'Co-op']
 selected_mode = st.selectbox('Select game mode:', game_modes)
+
+# Get all unique steamspy_tags
+all_tags = set(tag for sublist in final_merged_df['genres'].dropna().apply(lambda x: x.split(',')).tolist() for tag in sublist)
+selected_tags = st.multiselect('Select Genres (When you type game title, This is optional):', options=list(all_tags))
 
 # Filter based on user inputs
 filtered_df = final_merged_df.copy()
@@ -85,18 +89,18 @@ if selected_publisher:
 if selected_mode != 'Any':
     filtered_df = filtered_df[filtered_df['categories'].str.contains(selected_mode, case=False, na=False)]
 
-# Apply required age and price filters
-filtered_df = filtered_df[(filtered_df['required_age'] <= required_age) 
-                          ]
+if selected_tags:
+    tag_filter = filtered_df['genres'].apply(lambda x: any(tag in x for tag in selected_tags) if pd.notnull(x) else False)
+    filtered_df = filtered_df[tag_filter]
 
-# # Check the size of filtered data
-# st.write(f"Filtered dataset size: {filtered_df.shape}")
+# Apply required age filter
+filtered_df = filtered_df[filtered_df['required_age'] <= required_age]
 
 # Combine relevant text data for filtered_df
 filtered_df['content'] = (
     filtered_df['genres'] + ' ' + 
     filtered_df['developer'] + ' ' + 
-    filtered_df['steamspy_tags'] + ' ' + 
+    filtered_df['genres'] + ' ' + 
     filtered_df['short_description']
 )
 
@@ -114,13 +118,43 @@ def get_closest_games(df, cosine_sim, top_n=20):
     
     return df.iloc[game_indices]
 
-# Get closest 20 games
+# Function to get top N games based on filtered criteria
+def get_top_games(df, top_n=20):
+    return df.head(top_n)
+
+# Get recommendations
 if selected_game:
     closest_games = get_closest_games(filtered_df, cosine_sim)
     if not closest_games.empty:
         st.write("Top 20 closest games based on your selection:")
 
         for index, row in closest_games.iterrows():
+            st.markdown(f"### {row['name']}")
+            st.image(row['header_image'])
+            st.write(f"**Description:** {row['short_description']}")
+            st.write(f"**Price:** ${row['price']}")
+            st.write(f"**Genres:** {row['genres']}")
+            st.write(f"**Developer:** {row['developer']}")
+            st.write(f"**Required Age:** {row['required_age']}+")
+            st.write(f"**Categories:** {row['categories']}")
+            st.write("**Screenshots:**")
+            
+            # Display screenshots in a 3-column layout
+            screenshots = eval(row['screenshots'])
+            cols = st.columns(3)
+            for i, screenshot in enumerate(screenshots):
+                with cols[i % 3]:
+                    st.image(screenshot['path_thumbnail'], use_column_width=True)
+            
+            st.markdown("---")
+    else:
+        st.write("No games found based on the current filters.")
+else:
+    top_games = get_top_games(filtered_df)
+    if not top_games.empty:
+        st.write("Top 20 games based on your criteria:")
+
+        for index, row in top_games.iterrows():
             st.markdown(f"### {row['name']}")
             st.image(row['header_image'])
             st.write(f"**Description:** {row['short_description']}")
