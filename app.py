@@ -57,7 +57,7 @@ st.title('Game Recommendation System')
 required_age = st.slider('Select maximum allowed age rating:', 0, 21, 18)
 
 # User input for game title with partial matching
-selected_game_input = st.text_input('Type part or full of your favourite game title that you played:')
+selected_game_input = st.text_input('Type part or full of your favourite game title that you played if you have (optional):')
 matching_games = []
 if selected_game_input:
     matching_games = final_merged_df[final_merged_df['name'].str.contains(selected_game_input, case=False, na=False)]['name'].unique()
