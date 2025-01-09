@@ -144,7 +144,7 @@ if selected_game:
             cols = st.columns(3)
             for i, screenshot in enumerate(screenshots):
                 with cols[i % 3]:
-                    st.image(screenshot['path_thumbnail'], use_column_width=True)
+                    st.image(screenshot['path_thumbnail'], use_container_width=True)
             
             st.markdown("---")
     else:
@@ -170,7 +170,7 @@ else:
             cols = st.columns(3)
             for i, screenshot in enumerate(screenshots):
                 with cols[i % 3]:
-                    st.image(screenshot['path_thumbnail'], use_column_width=True)
+                    st.image(screenshot['path_thumbnail'], use_container_width=True)
             
             st.markdown("---")
     else:
